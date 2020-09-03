@@ -4,17 +4,12 @@ using System.Text;
 
 namespace ChessClient
 {
-    struct GameInfo
+    public class GameInfo
     {
-        public int gameId;
+        public int gameID;
         public string FEN;
-        public string status;
-        public string whitePlayer;
-        public string blackPlayer;
-        public string lastMove;
-        //public string yourColor;
-        //public bool isYourMove;
-        public string gameResult;// draw, resign, checkmate, stalemate
-        public string winnerPlayer;
+        public string opponentName;
+        public bool isYourMove;
+        public string yourColor;// black, white
     }
 }
