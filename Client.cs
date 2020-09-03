@@ -13,7 +13,6 @@ namespace ChessClient
     public class Client
     {
         string host;
-        public int CurrentGameId { get; set; } = -1;
 
         public Client(string host)
         {
@@ -68,12 +67,9 @@ namespace ChessClient
             await RequestPost("players", "", player, callback);
         }
 
-        public async Task MakeMove(string move, Action<GameState> callback)
+        public async Task SendMove(int gameId, string move, Action<GameState> callback)
         {
-            if (CurrentGameId != -1)
-            {
-                await RequestGet("moves", "/" + CurrentGameId.ToString() + "/" + move, callback);
-            }
+            await RequestGet("moves", "/" + gameId.ToString() + "/" + move, callback);
         }
 
         // returns a game with 'wait' status; we can create a new game or join an existing game
