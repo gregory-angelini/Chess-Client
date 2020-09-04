@@ -19,7 +19,6 @@ namespace ChessClient
             this.host = host;
         }
 
-        // example: RequestPost("players", "", Player, callback)
         async Task RequestPost<T1, T2>(string entity, string method, T1 entry, Action<T2> callback)
         {
             using (HttpClient client = new HttpClient())
@@ -64,18 +63,25 @@ namespace ChessClient
         // returns the player with player.GUID or creates a new one
         public async Task GetPlayer(Player player, Action<PlayerInfo> callback)
         {
-            await RequestPost("players", "", player, callback);
+            await RequestPost("players", "/", player, callback);
         }
 
-        public async Task SendMove(int gameId, string move, Action<GameState> callback)
+        // returns a new game state after applying the 'fenMove' move
+        public async Task SendMove(int gameId, string fenMove, Action<GameState> callback)
         {
-            await RequestGet("moves", "/" + gameId.ToString() + "/" + move, callback);
+            await RequestGet("moves", "/" + gameId.ToString() + "/" + fenMove, callback);
         }
 
         // returns a game with 'wait' status; we can create a new game or join an existing game
-        public async Task FindGame(Action<GameInfo> callback)
+        public async Task FindGame(RequestedGame rGame, Action<GameInfo> callback)
         {
-            await RequestGet("games", "", callback);
+            await RequestPost("games", "/", rGame, callback);
+        }
+
+        // returns a game with certain id
+        public async Task GetGame(int gameId, Action<GameState> callback)
+        {
+            await RequestGet("games", "/" + gameId.ToString() + "/", callback);
         }
 
         /*

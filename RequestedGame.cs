@@ -4,9 +4,9 @@ using System.Text;
 
 namespace ChessClient
 {
-    public class PlayerInfo
+    public class RequestedGame
     {
         public int playerID;
-        public string playerName;
+        public string playerColor;// white, black
     }
 }
