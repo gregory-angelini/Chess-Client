@@ -66,6 +66,12 @@ namespace ChessClient
             await RequestPost("players", "/", player, callback);
         }
 
+        // returns the player with player.GUID or creates a new one
+        public async Task GetPlayer(int gameID, string color, Action<PlayerInfo> callback)
+        {
+            await RequestGet("players", "/" + gameID.ToString() + "/" + color + "/", callback);
+        }
+
         // returns a new game state after applying the 'move'
         public async Task SendMove(MoveInfo move, Action<GameState> callback)
         {
@@ -79,9 +85,9 @@ namespace ChessClient
         }
 
         // returns a game with certain id
-        public async Task GetGame(int gameId, Action<GameState> callback)
+        public async Task GetGame(int gameID, Action<GameState> callback)
         {
-            await RequestGet("games", "/" + gameId.ToString() + "/", callback);
+            await RequestGet("games", "/" + gameID.ToString() + "/", callback);
         }
 
         /*
