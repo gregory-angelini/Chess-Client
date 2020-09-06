@@ -66,16 +66,16 @@ namespace ChessClient
             await RequestPost("players", "/", player, callback);
         }
 
-        // returns a new game state after applying the 'fenMove' move
-        public async Task SendMove(int gameId, string fenMove, Action<GameState> callback)
+        // returns a new game state after applying the 'move'
+        public async Task SendMove(MoveInfo move, Action<GameState> callback)
         {
-            await RequestGet("moves", "/" + gameId.ToString() + "/" + fenMove, callback);
+            await RequestPost("moves", "/", move, callback);
         }
 
         // returns a game with 'wait' status; we can create a new game or join an existing game
-        public async Task FindGame(RequestedGame rGame, Action<GameInfo> callback)
+        public async Task FindGame(RequestedGame r, Action<GameInfo> callback)
         {
-            await RequestPost("games", "/", rGame, callback);
+            await RequestPost("games", "/", r, callback);
         }
 
         // returns a game with certain id
