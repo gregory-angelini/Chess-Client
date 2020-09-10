@@ -12,6 +12,14 @@ namespace ChessClient
 {
     public class Client
     {
+        public enum Result
+        {
+            BadRequest = HttpStatusCode.BadRequest,
+            NotFound = HttpStatusCode.NotFound,
+            Ok = HttpStatusCode.OK,
+            Created = HttpStatusCode.Created
+        }
+
         string host;
 
         public Client(string host)
@@ -19,7 +27,7 @@ namespace ChessClient
             this.host = host;
         }
 
-        async Task RequestPost<T1, T2>(string entity, string method, T1 entry, Action<T2> callback)
+        async Task RequestPost<T1, T2>(string entity, string method, T1 entry, Action<Result, T2> callback)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -31,17 +39,26 @@ namespace ChessClient
 
                 using (HttpResponseMessage response = await client.PostAsync(requestUrl, entryContent))
                 {
-                    using (HttpContent content = response.Content)
+                    Result r = (Result)response.StatusCode;
+                    
+                    if (r == Result.Created || r == Result.Ok)
                     {
-                        string resultJSON = await content.ReadAsStringAsync();
-                        T2 result = JsonConvert.DeserializeObject<T2>(resultJSON);
-                        callback?.Invoke(result);
+                        using (HttpContent content = response.Content)
+                        {
+                            string resultJSON = await content.ReadAsStringAsync();
+                            T2 result = JsonConvert.DeserializeObject<T2>(resultJSON);
+                            callback?.Invoke(r, result);
+                        }
+                    }
+                    else
+                    {
+                        callback?.Invoke(r, default(T2));
                     }
                 }
             }
         }
 
-        async Task RequestGet<T>(string entity, string method, Action<T> callback)
+        async Task RequestGet<T>(string entity, string method, Action<Result, T> callback)
         {
             string requestUrl = host + entity + method;
 
@@ -49,11 +66,20 @@ namespace ChessClient
             {
                 using (HttpResponseMessage response = await client.GetAsync(requestUrl))
                 {
-                    using (HttpContent content = response.Content)
+                    Result r = (Result)response.StatusCode;
+
+                    if (r == Result.Created || r == Result.Ok)
                     {
-                        string resultJSON = await content.ReadAsStringAsync();
-                        T result = JsonConvert.DeserializeObject<T>(resultJSON);
-                        callback?.Invoke(result);
+                        using (HttpContent content = response.Content)
+                        {
+                            string resultJSON = await content.ReadAsStringAsync();
+                            T result = JsonConvert.DeserializeObject<T>(resultJSON);
+                            callback?.Invoke(r, result);
+                        }
+                    }
+                    else
+                    {
+                        callback?.Invoke(r, default(T));
                     }
                 }
             }
@@ -61,31 +87,31 @@ namespace ChessClient
 
 
         // returns the player with player.GUID or creates a new one
-        public async Task GetPlayer(Player player, Action<PlayerInfo> callback)
+        public async Task GetPlayer(Player player, Action<Result, PlayerInfo> callback)
         {
             await RequestPost("players", "/", player, callback);
         }
 
         // returns the player with player.GUID or creates a new one
-        public async Task GetPlayer(int gameID, string color, Action<PlayerInfo> callback)
+        public async Task GetPlayer(int gameID, string color, Action<Result, PlayerInfo> callback)
         {
             await RequestGet("players", "/" + gameID.ToString() + "/" + color + "/", callback);
         }
 
         // returns a new game state after applying the 'move'
-        public async Task SendMove(MoveInfo move, Action<GameState> callback)
+        public async Task SendMove(MoveInfo move, Action<Result, GameState> callback)
         {
             await RequestPost("moves", "/", move, callback);
         }
 
         // returns a game with 'wait' status; we can create a new game or join an existing game
-        public async Task FindGame(RequestedGame r, Action<GameInfo> callback)
+        public async Task FindGame(RequestedGame r, Action<Result, GameInfo> callback)
         {
             await RequestPost("games", "/", r, callback);
         }
 
         // returns a game with certain id
-        public async Task GetGame(int gameID, Action<GameState> callback)
+        public async Task GetGame(int gameID, Action<Result, GameState> callback)
         {
             await RequestGet("games", "/" + gameID.ToString() + "/", callback);
         }
